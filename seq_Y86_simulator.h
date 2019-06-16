@@ -97,6 +97,24 @@ public:
     unsigned long get_valp(){return valp;}
     void set_need_valc(unsigned char icode);
     void set_need_r(unsigned char icode);
+    bool get_need_r(){return need_r;}
+};
+
+class Align{
+private:
+    unsigned char rA;
+    unsigned char rB;
+    bool need_r;
+    union{
+        unsigned long valc;
+        char c_valc[8];
+    };
+public:
+    void set_need_r(bool _need_r){need_r=_need_r;}
+    void set_r_valc(vector<char> other_byte);
+    unsigned char get_rA(){return rA;}
+    unsigned char get_rB(){return rB;}
+    unsigned long get_valc(){return valc;}
 };
 
 class Y86{
@@ -105,7 +123,10 @@ private:
     Instruction_memory i_mem;
     PC pc;
     Split split;
+    PC_Add pc_add;
+    Align align;
 public:
+    void set_i_mem(vector<char> user_code){i_mem.set_i_mem(user_code);}
     void run();
 };
 

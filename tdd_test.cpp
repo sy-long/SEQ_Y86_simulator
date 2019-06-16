@@ -64,16 +64,25 @@ void test_split(){
 }
 void test_pc_add(){
     PC_Add pc_add;
-    pc_add.set_need_r(NOP);
-    pc_add.set_need_valc(NOP);
+    pc_add.set_need_r(1);
+    pc_add.set_need_valc(1);
     pc_add.set_valp(0);
     expect_actual(1,pc_add.get_valp());
-    pc_add.set_need_r(RRMOVQ);
+    pc_add.set_need_r(2);
     pc_add.set_valp(0);
     expect_actual(2,pc_add.get_valp());
-    pc_add.set_need_valc(IRMOVQ);
+    pc_add.set_need_valc(3);
     pc_add.set_valp(0);
     expect_actual(10,pc_add.get_valp());
+}
+void test_align(){
+    Align align;
+    align.set_need_r(true);
+    vector<char> test{-29,1,0,0,0,0,0,0,0};
+    align.set_r_valc(test);
+    expect_actual(14,align.get_rA());
+    expect_actual(3,align.get_rB());
+    expect_actual(1,align.get_valc());
 }
 void test(){
     test_pc();
@@ -81,6 +90,7 @@ void test(){
     test_instruction_memory();
     test_split();
     test_pc_add();
+    test_align();
 }
 
 int main(){

@@ -8,7 +8,7 @@ Stat::error Stat::get_stat_state(){
 }
 
 void Instruction_memory::set_target_instruction(unsigned long pc){
-    if(pc+10>=i_mem.size()){
+    if(pc+9>i_mem.size()){
         imem_error=true;
         target_instruction[0]=NOP;
     }
@@ -59,15 +59,12 @@ void Split::set_ic_if(unsigned char instruction_byte){
 }
 
 void PC_Add::set_need_valc(unsigned char icode){
-    if(icode==IRMOVQ||icode==RMMOVQ||icode==MRMOVQ||icode==CALL||
-       icode==JMP||icode==JLE||icode==JL||icode==JE||icode==JNE||
-       icode==JGE||icode==JG)
+    if(icode==static_cast<unsigned char>(3)||icode==static_cast<unsigned char>(4)||icode==static_cast<unsigned char>(5)||icode==static_cast<unsigned char>(7)||icode==static_cast<unsigned char>(8))
        need_valc=true;
     else need_valc=false;
 }
 void PC_Add::set_need_r(unsigned char icode){
-    if(icode==HALT||icode==NOP||icode==JMP||icode==JLE||icode==JL||
-       icode==JE||icode==JNE||icode==JGE||icode==JG||icode==CALL||icode==RET)
+    if(icode==static_cast<unsigned char>(0)||icode==static_cast<unsigned char>(1)||icode==static_cast<unsigned char>(7)||icode==static_cast<unsigned char>(8)||icode==static_cast<unsigned char>(9))
         need_r=false;
     else need_r=true;
 }
@@ -77,10 +74,29 @@ void PC_Add::set_valp(unsigned long pc){
     if(need_valc) valp+=8;
 }
 
+void Align::set_r_valc(vector<char> other_byte){
+    unsigned char temp_r=static_cast<unsigned char>(other_byte[0]);
+    rA=temp_r>>4;
+    rB=temp_r&static_cast<unsigned char>(15);
+    if(need_r){
+        for(int i=0;i<8;i++)
+            c_valc[i]=other_byte[i+1];
+    }
+    else{
+        for(int i=0;i<8;i++)
+            c_valc[i]=other_byte[i];
+    }
+}
+
 void Y86::run(){
     i_mem.set_target_instruction(pc.get_pc());
     stat.set_adr(i_mem.get_imem_error());
     split.set_imem_error_state(i_mem.get_imem_error());
     split.set_ic_if(i_mem.get_instruction_byte());
     stat.set_ins(split.get_instr_valid());
+    pc_add.set_need_r(split.get_icode());
+    pc_add.set_need_valc(split.get_icode());
+    pc_add.set_valp(pc.get_pc());
+    align.set_need_r(pc_add.get_need_r());
+    align.set_r_valc(i_mem.get_other_byte());
 }
