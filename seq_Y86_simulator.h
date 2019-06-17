@@ -117,6 +117,12 @@ public:
     unsigned long get_valc(){return valc;}
 };
 
+class register_memory{
+private:
+    unsigned long r_mem[15];
+public:
+};
+
 class Y86{
 private:
     Stat stat;
