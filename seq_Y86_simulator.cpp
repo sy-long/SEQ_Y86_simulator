@@ -88,6 +88,23 @@ void Align::set_r_valc(vector<char> other_byte){
     }
 }
 
+unsigned long Register_memory::get_valA(){
+    if(icode==static_cast<unsigned char>(2)||icode==static_cast<unsigned char>(4)||icode==static_cast<unsigned char>(6)||
+       icode==static_cast<unsigned char>(10))
+        return r_mem[rA];
+    else if(icode==static_cast<unsigned char>(9)||icode==static_cast<unsigned char>(11))
+        return r_mem[4];
+    else return 0;
+}
+
+unsigned long Register_memory::get_valB(){
+    if(icode==static_cast<unsigned char>(6)||icode==static_cast<unsigned char>(4)||icode==static_cast<unsigned char>(5))
+        return r_mem[rB];
+    else if(icode==static_cast<unsigned char>(10)||icode==static_cast<unsigned char>(11)||static_cast<unsigned char>(8)||static_cast<unsigned char>(9))
+        return r_mem[4];
+    else return 0;
+}
+
 void Y86::run(){
     i_mem.set_target_instruction(pc.get_pc());
     stat.set_adr(i_mem.get_imem_error());
@@ -99,4 +116,7 @@ void Y86::run(){
     pc_add.set_valp(pc.get_pc());
     align.set_need_r(pc_add.get_need_r());
     align.set_r_valc(i_mem.get_other_byte());
+    r_mem.set_rA(align.get_rA());
+    r_mem.set_rB(align.get_rB());
+    r_mem.set_icode(split.get_icode());
 }

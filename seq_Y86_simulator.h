@@ -117,10 +117,19 @@ public:
     unsigned long get_valc(){return valc;}
 };
 
-class register_memory{
+class Register_memory{
 private:
     unsigned long r_mem[15];
+    unsigned char rA;
+    unsigned char rB;
+    unsigned char icode;
 public:
+    Register_memory(){for(int i=0;i<15;i++) r_mem[i]=0;}
+    void set_rA(unsigned char _rA){rA=_rA;}
+    void set_rB(unsigned char _rB){rB=_rB;}
+    void set_icode(unsigned char _icode){icode=_icode;}
+    unsigned long get_valA();
+    unsigned long get_valB();
 };
 
 class Y86{
@@ -131,6 +140,7 @@ private:
     Split split;
     PC_Add pc_add;
     Align align;
+    Register_memory r_mem;
 public:
     void set_i_mem(vector<char> user_code){i_mem.set_i_mem(user_code);}
     void run();

@@ -84,6 +84,14 @@ void test_align(){
     expect_actual(3,align.get_rB());
     expect_actual(1,align.get_valc());
 }
+void test_register_memory(){
+    Register_memory r_mem;
+    r_mem.set_icode(6);
+    r_mem.set_rA(2);
+    r_mem.set_rB(3);
+    expect_actual(0,r_mem.get_valA());
+    expect_actual(0,r_mem.get_valB());
+}
 void test(){
     test_pc();
     test_stat();
@@ -91,6 +99,7 @@ void test(){
     test_split();
     test_pc_add();
     test_align();
+    test_register_memory();
 }
 
 int main(){
