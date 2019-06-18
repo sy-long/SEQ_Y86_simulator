@@ -100,9 +100,77 @@ unsigned long Register_memory::get_valA(){
 unsigned long Register_memory::get_valB(){
     if(icode==static_cast<unsigned char>(6)||icode==static_cast<unsigned char>(4)||icode==static_cast<unsigned char>(5))
         return r_mem[rB];
-    else if(icode==static_cast<unsigned char>(10)||icode==static_cast<unsigned char>(11)||static_cast<unsigned char>(8)||static_cast<unsigned char>(9))
+    else if(icode==static_cast<unsigned char>(10)||icode==static_cast<unsigned char>(11)||icode==static_cast<unsigned char>(8)||icode==static_cast<unsigned char>(9))
         return r_mem[4];
     else return 0;
+}
+void ALU::set_alufun(){
+    if(icode==static_cast<unsigned char>(6))
+        alufun=ifun;
+    else alufun=0;
+}
+unsigned long ALU::get_valE(){
+    long alu_A,alu_B;
+    unsigned long valE;
+    if(icode==static_cast<unsigned char>(6)||icode==static_cast<unsigned char>(2))
+        alu_A=static_cast<long>(valA);
+    else if(icode==static_cast<unsigned char>(3)||icode==static_cast<unsigned char>(4)||icode==static_cast<unsigned char>(5))
+        alu_A=static_cast<long>(valC);
+    else if(icode==static_cast<unsigned char>(8)||icode==static_cast<unsigned char>(10))
+        alu_A=-8;
+    else if(icode==static_cast<unsigned char>(9)||icode==static_cast<unsigned char>(11))
+        alu_A=8;
+    else alu_A=0;
+    if(icode==static_cast<unsigned char>(4)||icode==static_cast<unsigned char>(5)||icode==static_cast<unsigned char>(6)||
+       icode==static_cast<unsigned char>(8)||icode==static_cast<unsigned char>(9)||icode==static_cast<unsigned char>(10)||
+       icode==static_cast<unsigned char>(11))
+        alu_B=static_cast<long>(valB);
+    else if(icode==static_cast<unsigned char>(2)||icode==static_cast<unsigned char>(3))
+        alu_B=0;
+    else alu_B=0;
+    switch (alufun) {
+    case 0:valE=static_cast<unsigned long>(alu_A+alu_B);break;
+    case 1:valE=static_cast<unsigned long>(alu_B-alu_A);break;
+    case 2:valE=static_cast<unsigned long>(alu_B&alu_A);break;
+    case 3:valE=static_cast<unsigned long>(alu_B^alu_A);break;
+    }
+    if(valE==0) ZF=true;
+    if(static_cast<long>(valE)<0) SF=true;
+    if(alu_A>0&&alu_B>0&&static_cast<long>(valE)<=0)
+        OF=true;
+    if(alu_A<0&&alu_B<0&&static_cast<long>(valE)>=0)
+        OF=true;
+    return valE;
+}
+
+bool Cond::get_cnd(){
+    if(ifun==static_cast<unsigned char>(0))
+        return true;
+    if(ifun==static_cast<unsigned char>(1)){
+        if((SF^OF)|ZF) return true;
+        else return false;
+    }
+    if(ifun==static_cast<unsigned char>(2)){
+        if(SF^OF) return true;
+        else return false;
+    }
+    if(ifun==static_cast<unsigned char>(3)){
+        if(ZF) return true;
+        else return false;
+    }
+    if(ifun==static_cast<unsigned char>(4)){
+        if(~ZF) return true;
+        else return false;
+    }
+    if(ifun==static_cast<unsigned char>(5)){
+        if(~(SF^OF)) return true;
+        else return false;
+    }
+    if(ifun==static_cast<unsigned char>(6)){
+        if((~(SF^OF))&~ZF) return true;
+        else return false;
+    }
+    return false;
 }
 
 void Y86::run(){
@@ -119,4 +187,15 @@ void Y86::run(){
     r_mem.set_rA(align.get_rA());
     r_mem.set_rB(align.get_rB());
     r_mem.set_icode(split.get_icode());
+    alu.set_icode(split.get_icode());
+    alu.set_ifun(split.get_ifun());
+    alu.set_valA(r_mem.get_valA());
+    alu.set_valB(r_mem.get_valB());
+    alu.set_valC(align.get_valc());
+    alu.set_alufun();
+    cc.set_set_cc(split.get_icode());
+    cc.set_sign(alu.get_ZF(),alu.get_SF(),alu.get_OF());
+    cond.set_sign(cc.get_ZF(),cc.get_SF(),cc.get_OF());
+    cond.set_ifun(split.get_ifun());
+
 }

@@ -92,6 +92,31 @@ void test_register_memory(){
     expect_actual(0,r_mem.get_valA());
     expect_actual(0,r_mem.get_valB());
 }
+void test_alu(){
+    ALU alu;
+    alu.set_valA(10);
+    alu.set_valB(10);
+    alu.set_valC(30);
+    alu.set_icode(static_cast<unsigned char>(6));
+    alu.set_ifun(static_cast<unsigned char>(1));
+    alu.set_alufun();
+    expect_actual(0,static_cast<long>(alu.get_valE()));
+    expect_actual(true,alu.get_ZF());
+}
+void test_cc(){
+    CC cc;
+    cc.set_set_cc(static_cast<unsigned char>(6));
+    cc.set_sign(true,false,false);
+    expect_actual(true,cc.get_ZF());
+    expect_actual(false,cc.get_SF());
+    expect_actual(false,cc.get_OF());
+}
+void test_cond(){
+    Cond cond;
+    cond.set_sign(true,true,false);
+    cond.set_ifun(static_cast<unsigned char>(2));
+    expect_actual(true,cond.get_cnd());
+}
 void test(){
     test_pc();
     test_stat();
@@ -100,6 +125,9 @@ void test(){
     test_pc_add();
     test_align();
     test_register_memory();
+    test_alu();
+    test_cc();
+    test_cond();
 }
 
 int main(){

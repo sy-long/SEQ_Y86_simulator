@@ -131,6 +131,65 @@ public:
     unsigned long get_valA();
     unsigned long get_valB();
 };
+class CC{
+    bool set_cc;
+    bool ZF;
+    bool SF;
+    bool OF;
+public:
+    CC():ZF(false),SF(false),OF(false),set_cc(false){}
+    void set_set_cc(unsigned char icode){if(icode==static_cast<unsigned char>(6)) set_cc=true;}
+    void set_sign(bool _ZF,bool _SF,bool _OF){
+        if(set_cc==true){
+            ZF=_ZF;
+            SF=_SF;
+            OF=_OF;
+        }
+    }
+    bool get_ZF(){return ZF;}
+    bool get_SF(){return SF;}
+    bool get_OF(){return OF;}
+};
+
+class ALU{
+private:
+    unsigned long valA;
+    unsigned long valB;
+    unsigned long valC;
+    unsigned char icode;
+    unsigned char ifun;
+    unsigned char alufun;
+    bool ZF;
+    bool SF;
+    bool OF;
+public:
+    ALU():ZF(false),SF(false),OF(false){}
+    void set_valA(unsigned long _valA){valA=_valA;}
+    void set_valB(unsigned long _valB){valB=_valB;}
+    void set_valC(unsigned long _valC){valC=_valC;}
+    void set_icode(unsigned char _icode){icode=_icode;}
+    void set_ifun(unsigned char _ifun){ifun=_ifun;}
+    void set_alufun();
+    bool get_ZF(){return ZF;}
+    bool get_SF(){return SF;}
+    bool get_OF(){return OF;}
+    unsigned long get_valE();
+};
+class Cond{
+private:
+    bool ZF;
+    bool SF;
+    bool OF;
+    unsigned char ifun;
+public:
+    void set_sign(bool _ZF,bool _SF,bool _OF){
+            ZF=_ZF;
+            SF=_SF;
+            OF=_OF;
+        }
+    void set_ifun(unsigned char _ifun){ifun=_ifun;}
+    bool get_cnd();
+};
 
 class Y86{
 private:
@@ -141,6 +200,9 @@ private:
     PC_Add pc_add;
     Align align;
     Register_memory r_mem;
+    ALU alu;
+    CC cc;
+    Cond cond;
 public:
     void set_i_mem(vector<char> user_code){i_mem.set_i_mem(user_code);}
     void run();
