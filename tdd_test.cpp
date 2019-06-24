@@ -117,6 +117,16 @@ void test_cond(){
     cond.set_ifun(static_cast<unsigned char>(2));
     expect_actual(true,cond.get_cnd());
 }
+void test_data_memory() {
+	data_memory d_mem;
+	d_mem.set_r_or_w(4);
+	d_mem.set_addr(4, 5, 4);
+	d_mem.set_data(4, 5, 20);
+	expect_actual(0,d_mem.get_valM());
+	d_mem.set_r_or_w(5);
+	d_mem.set_addr(5, 5, 4);
+	expect_actual(5, d_mem.get_valM());
+}
 void test(){
     test_pc();
     test_stat();
@@ -128,6 +138,7 @@ void test(){
     test_alu();
     test_cc();
     test_cond();
+	test_data_memory();
 }
 
 int main(){

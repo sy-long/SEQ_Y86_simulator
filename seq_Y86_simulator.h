@@ -58,6 +58,7 @@ public:
     bool get_imem_error(){return imem_error;}
 };
 
+
 class Stat{
 private:
     bool adr;
@@ -191,6 +192,30 @@ public:
     bool get_cnd();
 };
 
+class data_memory {
+private:
+	vector<unsigned char> d_mem;
+	unsigned long addr;
+	union {
+		unsigned long data;
+		unsigned char c_data[8];
+	};
+	union {
+		unsigned long valM;
+		unsigned char c_valM[8];
+	};
+	bool write;
+	bool read;
+	bool dmem_error;
+public:
+	data_memory() :d_mem(200),dmem_error(false){}
+	bool get_dmem_error() { return dmem_error; }
+	void set_r_or_w(unsigned char icode);
+	void set_addr(unsigned char icode,unsigned long valA,unsigned long valE);
+	void set_data(unsigned char icode, unsigned long valA, unsigned long valP);
+	unsigned long get_valM();
+};
+
 class Y86{
 private:
     Stat stat;
@@ -209,4 +234,4 @@ public:
 };
 
 #endif // SEQ_Y86_SIMULATOR_H
-xxx
+

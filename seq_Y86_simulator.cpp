@@ -173,6 +173,39 @@ bool Cond::get_cnd(){
     return false;
 }
 
+void data_memory::set_r_or_w(unsigned char icode) {
+	if (icode == 5 || icode == 11 || icode == 9) read = true;
+	else read = false;
+	if (icode == 4 || icode == 10 || icode == 8) write = true;
+	else write = false;
+}
+
+void data_memory::set_addr(unsigned char icode, unsigned long valA, unsigned long valE) {
+	if (icode == 4 || icode == 5 || icode == 10 || icode == 8) addr = valE;
+	else if (icode == 11 || icode == 9) addr = valA;
+}
+void data_memory::set_data(unsigned char icode, unsigned long valA, unsigned long valP) {
+	if (icode == 4 || icode == 10) data = valA;
+	else if (icode == 8) data = valP;
+}
+unsigned long data_memory::get_valM() {
+	if (write == false && read == false)
+		return 0;
+	if (addr+8 >= d_mem.size()) {
+		dmem_error = true;
+		return 0;
+	}
+	if (write) {
+		for (int i = 0; i < 8; i++)
+			d_mem[addr+i] = c_data[i];
+		return 0;
+	}
+	else {
+		for (int i = 0; i < 8; i++)
+			c_valM[i] = d_mem[addr+i];
+		return valM;
+	}
+}
 void Y86::run(){
     i_mem.set_target_instruction(pc.get_pc());
     stat.set_adr(i_mem.get_imem_error());
