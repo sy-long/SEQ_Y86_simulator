@@ -41,7 +41,7 @@ private:
 public:
     PC():pc(PC_SIZE){}
     unsigned long get_pc(){return pc;}
-    void set_pc(unsigned long _pc){pc=_pc;}
+	void set_pc(unsigned char icode, bool cnd, unsigned long valC, unsigned long valP, unsigned long valM);
 };
 
 class Instruction_memory{
@@ -124,6 +124,8 @@ private:
     unsigned char rA;
     unsigned char rB;
     unsigned char icode;
+	unsigned char rE;
+	unsigned char rM;
 public:
     Register_memory(){for(int i=0;i<15;i++) r_mem[i]=0;}
     void set_rA(unsigned char _rA){rA=_rA;}
@@ -131,6 +133,12 @@ public:
     void set_icode(unsigned char _icode){icode=_icode;}
     unsigned long get_valA();
     unsigned long get_valB();
+	void set_rE(bool cnd);
+	void set_rM();
+	unsigned char get_rE() { return rE; }
+	unsigned char get_rM() { return rM; }
+	void set_valE_to_m(unsigned long valE);
+	void set_valM_to_m(unsigned long valM);
 };
 class CC{
     bool set_cc;
@@ -228,6 +236,7 @@ private:
     ALU alu;
     CC cc;
     Cond cond;
+	data_memory d_mem;
 public:
     void set_i_mem(vector<char> user_code){i_mem.set_i_mem(user_code);}
     void run();

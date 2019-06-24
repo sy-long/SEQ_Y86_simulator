@@ -206,6 +206,34 @@ unsigned long data_memory::get_valM() {
 		return valM;
 	}
 }
+
+void PC::set_pc(unsigned char icode, bool cnd, unsigned long valC, unsigned long valP, unsigned long valM) {
+	if (icode == 8) pc = valC;
+	else if (icode == 7 && cnd) pc = valC;
+	else if (icode == 9) pc = valM;
+	else pc = valP;
+}
+
+void Register_memory::set_rE(bool cnd) {
+	if (icode == 2 && cnd) rE = rB;
+	else if (icode == 3 || icode == 6) rE = rB;
+	else if (icode == 11 || icode == 10 || icode == 9 || icode == 8) rE = 4;
+	else rE = 15;
+}
+
+void Register_memory::set_rM() {
+	if (icode == 5 || icode == 11) rM = rA;
+	else rM = 15;
+}
+
+void Register_memory::set_valE_to_m(unsigned long valE) {
+	if (rE != 15) r_mem[rE] = valE;
+}
+
+void Register_memory::set_valM_to_m(unsigned long valM) {
+	if (rM != 15) r_mem[rM] = valM;
+}
+
 void Y86::run(){
     i_mem.set_target_instruction(pc.get_pc());
     stat.set_adr(i_mem.get_imem_error());
@@ -227,8 +255,12 @@ void Y86::run(){
     alu.set_valC(align.get_valc());
     alu.set_alufun();
     cc.set_set_cc(split.get_icode());
-    cc.set_sign(alu.get_ZF(),alu.get_SF(),alu.get_OF());
-    cond.set_sign(cc.get_ZF(),cc.get_SF(),cc.get_OF());
-    cond.set_ifun(split.get_ifun());
-
+	d_mem.set_r_or_w(split.get_icode);
+	d_mem.set_addr(split.get_icode, r_mem.get_valA, alu.get_valE);
+	d_mem.set_data(split.get_icode, r_mem.get_valA, pc_add.get_valp);
+	pc.set_pc(split.get_icode, cond.get_cnd, align.get_valc, pc_add.get_valp, d_mem.get_valM);
+	cc.set_sign(alu.get_ZF(), alu.get_SF(), alu.get_OF());
+	cond.set_sign(cc.get_ZF(), cc.get_SF(), cc.get_OF());
+	cond.set_ifun(split.get_ifun());
+	//todo
 }
