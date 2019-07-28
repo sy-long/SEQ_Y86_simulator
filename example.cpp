@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <string>
 #include "seq_Y86_simulator.h"
 using namespace std;
 
@@ -13,20 +14,10 @@ int main() {
 	vector<unsigned char> test;
 	ifstream fp;
 	fp.open(file_name);
-	unsigned char ch;
+	string ch;
 	while (!fp.eof()) {
-		ch = fp.get();
-		test.push_back(ch);
-	}
-	test.pop_back();
-	vector<unsigned char>::iterator i;
-	for (i = test.begin(); i != test.end();) {
-		if (*i == ',' || *i == '\n') {
-			i = test.erase(i);
-		}
-		else {
-			i++;
-		}
+		fp >> ch;
+		test.push_back(stoi(ch));
 	}
 	y86.set_i_mem(test);
 	y86.run();
