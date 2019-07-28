@@ -46,31 +46,27 @@ public:
 
 class Instruction_memory{
 private:
-    vector<char> i_mem;
-    vector<char> target_instruction;
+    vector<unsigned char> i_mem;
+    vector<unsigned char> target_instruction;
     bool imem_error;
 public:
     Instruction_memory():i_mem(I_MEM_SIZE),target_instruction(10),imem_error(false){}
-    void set_i_mem(vector<char> user_code){i_mem=user_code;}
+    void set_i_mem(vector<unsigned char> user_code){i_mem=user_code;}
     void set_target_instruction(unsigned long pc);
     unsigned char get_instruction_byte();
-    vector<char> get_other_byte();
+    vector<unsigned char> get_other_byte();
     bool get_imem_error(){return imem_error;}
 };
 
 
 class Stat{
 private:
-    bool adr;
-    bool ins;
-    bool hlt;
+	enum error { AOK = 1, ADR, INS, HLT };
+	error result;
 public:
-    Stat():adr(false),ins(true),hlt(false){}
-    enum error{AOK=1,ADR,INS,HLT};
-    void set_adr(bool _adr){if(_adr==true) adr=true;}
-    void set_ins(bool _ins){if(_ins==false) ins=false;}
-    void set_hlt(bool _hlt){if(_hlt==true) hlt=true;}
-    error get_stat_state();
+	Stat() :result(AOK){}
+	void set_stat_state(bool _i_adr, bool _d_adr, bool _ins, unsigned char icode);
+	error get_stat_state() { return result; }
 };
 
 class Split{
@@ -78,11 +74,9 @@ private:
     unsigned char icode;
     unsigned char ifun;
     bool instr_valid;
-    bool imem_error;
 public:
-    Split():instr_valid(true),imem_error(false){}
-    void set_ic_if(unsigned char instruction_byte);
-    void set_imem_error_state(bool _imem_error){imem_error=_imem_error;}
+    Split():instr_valid(true){}
+	void set_ic_if(bool imem_error, unsigned char instruction_byte);
     unsigned char get_icode(){return icode;}
     unsigned char get_ifun(){return ifun;}
     bool get_instr_valid(){return instr_valid;}
@@ -94,25 +88,20 @@ private:
     bool need_valc;
     bool need_r;
 public:
-    void set_valp(unsigned long pc);
+    void set_valp(unsigned long pc, unsigned char icode);
     unsigned long get_valp(){return valp;}
-    void set_need_valc(unsigned char icode);
-    void set_need_r(unsigned char icode);
-    bool get_need_r(){return need_r;}
 };
 
 class Align{
 private:
     unsigned char rA;
     unsigned char rB;
-    bool need_r;
     union{
         unsigned long valc;
         char c_valc[8];
     };
 public:
-    void set_need_r(bool _need_r){need_r=_need_r;}
-    void set_r_valc(vector<char> other_byte);
+	void set_r_valc(vector<unsigned char> other_byte, unsigned char icode);
     unsigned char get_rA(){return rA;}
     unsigned char get_rB(){return rB;}
     unsigned long get_valc(){return valc;}
@@ -121,35 +110,27 @@ public:
 class Register_memory{
 private:
     unsigned long r_mem[15];
-    unsigned char rA;
-    unsigned char rB;
-    unsigned char icode;
-	unsigned char rE;
-	unsigned char rM;
+	unsigned long valA;
+	unsigned long valB;
+	unsigned char dstE;
+	unsigned char dstM;
 public:
     Register_memory(){for(int i=0;i<15;i++) r_mem[i]=0;}
-    void set_rA(unsigned char _rA){rA=_rA;}
-    void set_rB(unsigned char _rB){rB=_rB;}
-    void set_icode(unsigned char _icode){icode=_icode;}
-    unsigned long get_valA();
-    unsigned long get_valB();
-	void set_rE(bool cnd);
-	void set_rM();
-	unsigned char get_rE() { return rE; }
-	unsigned char get_rM() { return rM; }
-	void set_valE_to_m(unsigned long valE);
-	void set_valM_to_m(unsigned long valM);
+	void set_value(unsigned char icode, unsigned char rA, unsigned rB, bool cnd);
+	void set_valE_to_rm(unsigned long valE);
+	void set_valM_to_rm(unsigned long valM);
+	unsigned long get_valA() { return valA; }
+	unsigned long get_valB() { return valB; }
+	unsigned long get_rax() { return r_mem[0]; }
 };
 class CC{
-    bool set_cc;
     bool ZF;
     bool SF;
     bool OF;
 public:
-    CC():ZF(false),SF(false),OF(false),set_cc(false){}
-    void set_set_cc(unsigned char icode){if(icode==static_cast<unsigned char>(6)) set_cc=true;}
-    void set_sign(bool _ZF,bool _SF,bool _OF){
-        if(set_cc==true){
+    CC():ZF(false),SF(false),OF(false){}
+    void set_sign(bool _ZF,bool _SF,bool _OF, unsigned char icode){
+		if (icode == static_cast<unsigned char>(6)){
             ZF=_ZF;
             SF=_SF;
             OF=_OF;
@@ -162,48 +143,35 @@ public:
 
 class ALU{
 private:
-    unsigned long valA;
-    unsigned long valB;
-    unsigned long valC;
-    unsigned char icode;
-    unsigned char ifun;
-    unsigned char alufun;
+	unsigned long valE;
     bool ZF;
     bool SF;
     bool OF;
 public:
     ALU():ZF(false),SF(false),OF(false){}
-    void set_valA(unsigned long _valA){valA=_valA;}
-    void set_valB(unsigned long _valB){valB=_valB;}
-    void set_valC(unsigned long _valC){valC=_valC;}
-    void set_icode(unsigned char _icode){icode=_icode;}
-    void set_ifun(unsigned char _ifun){ifun=_ifun;}
-    void set_alufun();
+
+	void set_valE_and_cnd(unsigned long valA, unsigned long valB, unsigned long valC, unsigned char icode, unsigned char ifun);
+
     bool get_ZF(){return ZF;}
     bool get_SF(){return SF;}
     bool get_OF(){return OF;}
-    unsigned long get_valE();
+	unsigned long get_valE() { return valE; }
 };
 class Cond{
 private:
     bool ZF;
     bool SF;
     bool OF;
-    unsigned char ifun;
+	bool cnd;
 public:
-    void set_sign(bool _ZF,bool _SF,bool _OF){
-            ZF=_ZF;
-            SF=_SF;
-            OF=_OF;
-        }
-    void set_ifun(unsigned char _ifun){ifun=_ifun;}
-    bool get_cnd();
+	Cond() :ZF(false), SF(false), OF(false), cnd(false){}
+	void set_cnd(bool ZF, bool SF, bool OF, unsigned char ifun);
+	bool get_cnd() { return cnd; }
 };
 
 class data_memory {
 private:
 	vector<unsigned char> d_mem;
-	unsigned long addr;
 	union {
 		unsigned long data;
 		unsigned char c_data[8];
@@ -212,16 +180,12 @@ private:
 		unsigned long valM;
 		unsigned char c_valM[8];
 	};
-	bool write;
-	bool read;
 	bool dmem_error;
 public:
 	data_memory() :d_mem(200),dmem_error(false){}
 	bool get_dmem_error() { return dmem_error; }
-	void set_r_or_w(unsigned char icode);
-	void set_addr(unsigned char icode,unsigned long valA,unsigned long valE);
-	void set_data(unsigned char icode, unsigned long valA, unsigned long valP);
-	unsigned long get_valM();
+	void set_valM_and_error(unsigned char icode, unsigned long valA, unsigned long valE, unsigned long valP);
+	unsigned long get_valM() { return valM; }
 };
 
 class Y86{
@@ -238,8 +202,9 @@ private:
     Cond cond;
 	data_memory d_mem;
 public:
-    void set_i_mem(vector<char> user_code){i_mem.set_i_mem(user_code);}
+    void set_i_mem(vector<unsigned char> user_code){i_mem.set_i_mem(user_code);}
     void run();
+	unsigned long get_result() { return r_mem.get_rax(); }
 };
 
 #endif // SEQ_Y86_SIMULATOR_H
